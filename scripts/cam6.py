@@ -42,20 +42,20 @@ This script is for parsing and publishing images captured from thr raspberry pi 
 """
 
 class pi_cam:
-    def __init__(self, cam_num, camera_info_url, width, height):
-        self.cam_name = 'pi_cam_' + str(cam_num)
+    def __init__(self, cam_num, cam_name, camera_info_url, frame_id, width, height):
+        self.cam_name = cam_name
         self.camera_info_url = camera_info_url
-        self.frame_id = 'pi_cam'
+        self.frame_id = frame_id
         self.width = width
         self.height = height
         
         self.cname = camera_info_manager.genCameraName(self.cam_name)
         self.cinfo = camera_info_manager.CameraInfoManager(cname=self.cam_name, url=self.camera_info_url)
         self.cinfo.loadCameraInfo()
-        self.infoPub = rospy.Publisher('/camera/camera_info', CameraInfo, queue_size=1)
+        self.infoPub = rospy.Publisher('camera_info', CameraInfo, queue_size=1)
 
         self.bridge = CvBridge()
-        self.imgPub = rospy.Publisher('/camera/image_raw', Image, queue_size=10)
+        self.imgPub = rospy.Publisher('image_raw', Image, queue_size=10)
         Gst.init(None)
         self.pipe = Gst.parse_launch("""nvcamerasrc sensor-id=""" + str(cam_num) + """ fpsRange="30 30" ! video/x-raw(memory:NVMM), width=(int)""" + str(width) + """, height=(int)""" + str(height) + """, format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=2 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink sync=false max-buffers=2 drop=true name=sink emit-signals=true""")
         self.sink = self.pipe.get_by_name('sink')
@@ -99,11 +99,15 @@ def main():
     rospy.init_node('GstRasPiCam',anonymous=False)
     cam_num = rospy.get_param('~cam_num', 1)
     cam_info_url = rospy.get_param('~cam_info_url', '')
+    cam_name = rospy.get_param('~cam_name', 'pi_cam')
+    frame_id = rospy.get_param('~frame_id', 'stereo')
+
     width = rospy.get_param('width', 820)
     height = rospy.get_param('height', 616)
 
+
     rospy.loginfo('camnum is %d', cam_num)
-    piCam = pi_cam(cam_num, cam_info_url, width, height)
+    piCam = pi_cam(cam_num, cam_name, cam_info_url, frame_id, width, height)
 
     print 'gstRasPiCam ' + str(cam_num) + ' start'
    
