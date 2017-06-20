@@ -8,7 +8,7 @@ project(pi_cam_driver)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  cv_beidge
+  cv_bridge
   image_transport
   roscpp
   rospy
