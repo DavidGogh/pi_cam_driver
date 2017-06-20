@@ -1,0 +1,28 @@
+<launch>
+    <arg name="cam_num" default="1" />
+    <arg name="width" default="1640" />
+    <arg name="height" default="1232" />
+    <arg name="enable_compression" default="0" />
+    <arg name="enable_display" default="0" />
+
+    <group ns="pi_cam">
+        <param name="width" value="$(arg width)" />
+        <param name="height" value="$(arg height)" />
+
+        <node pkg="cam6_test" type="cam6.py" name="camera" >
+            <param name="cam_num" value="$(arg cam_num)" />
+            <param name="camera_info_url" value="package://settings/$(arg cam_num).yaml" />
+        </node>
+
+        <node pkg="image_transport" type="republish" name="republish"
+           args="compressed" if="$(arg enable_compression)">
+            <remap from="in" to="image_raw" />
+            <remap from="out" to="image_raw_out" />
+        </node>
+
+        <node name="cam_view" pkg="image_view" type="image_view" respawn="false" output="screen" if="$(arg enable_display)" >
+            <remap from="image" to="/camera/image_raw"/>
+        </node>
+    </group>
+
+</launch>
